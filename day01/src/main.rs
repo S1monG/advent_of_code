@@ -11,7 +11,7 @@ fn main() {
         ).sum()
     );
 
-    println!("{}", totals.clone().max().unwrap());
+    println!("Part 1: {}", totals.clone().max().unwrap());
 
     let mut top_three = vec![0,0,0];
 
@@ -23,7 +23,7 @@ fn main() {
         }
     }
 
-    println!("{}", top_three.iter().sum::<usize>());
+    println!("Part 2: {}", top_three.iter().sum::<usize>());
 }
 
 
