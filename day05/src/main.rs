@@ -20,21 +20,23 @@ fn main() {
     let mut stack_part2 = stack_part1.clone();
 
     for line in input_moves.lines() {
-        let moves: Vec<u32> = line.split(" ").filter_map(|s| s.parse::<u32>().ok()).collect();
+        let moves: Vec<u8> = line.split(" ").filter_map(|s| s.parse::<u8>().ok()).collect();
         let (iterations, from_stack, to_stack) = (*moves.get(0).unwrap(),
                                                                  *moves.get(1).unwrap(),
-                                                                 *moves.get(2).unwrap());
+                                                                 *moves.get(2).unwrap()
+        );
 
-        // Part 1
+        let index = stack_part2[usize::from(to_stack-1)].len();
+
         for _ in 0..iterations {
-            let crate_to_be_moved = stack_part1[usize::try_from(from_stack-1).unwrap()].pop();
-            stack_part1[usize::try_from(to_stack-1).unwrap()].push(crate_to_be_moved.unwrap());
+
+            // Part 1
+            let crate_to_be_moved = stack_part1[usize::from(from_stack-1)].pop().unwrap();
+            stack_part1[usize::from(to_stack-1)].push(crate_to_be_moved);
+
+            stack_part2[usize::from(to_stack-1)].insert(index, crate_to_be_moved);
         }
 
-        // Part 2
-        let split_at: usize = stack_part2[usize::try_from(from_stack-1).unwrap()].len() - usize::try_from(iterations).unwrap();
-        let mut crates_to_be_moved = stack_part2[usize::try_from(from_stack-1).unwrap()].split_off(split_at);
-        stack_part2[usize::try_from(to_stack-1).unwrap()].append(&mut crates_to_be_moved);
     }
 
     println!("Part 1:");
