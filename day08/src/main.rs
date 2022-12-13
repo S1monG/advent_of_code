@@ -54,14 +54,18 @@ impl QuadraticMatrix {
         let index_col = index % self.size;
 
         println!("Row {index_row}    Col {index_col}");
+        
+        let from_left = self.get_row(index_row).iter().take(index_col).all(|value| tree_size > value);
+        let from_right = self.get_row(index_row).iter().skip(index_col+1).all(|value| tree_size > value);
+        
+        // from top doesn't seem to be working right, need to check that more in depth
+        // probobly easiest to do with println debugging.
+        let from_top = self.get_col(index_row).iter().take(index_row).all(|value| tree_size > value);
+        let from_bottom = self.get_col(index_row).iter().skip(index_row+1).all(|value| tree_size > value);
+        
+        println!("From left {}   From right {}   From top {}   From bottom {}", from_left, from_right, from_top, from_bottom);
 
-        // check visibility from left and right
-        self.get_row(index_row).iter().take(index_col).any(|value| *value >= tree_size) ||
-        self.get_row(index_row).iter().skip(index_col).any(|value| *value >= tree_size) ||
-
-        // check visibility from top and bottom
-        self.get_col(index_row).iter().take(index_row).any(|value| *value >= tree_size) ||
-        self.get_col(index_row).iter().skip(index_row).any(|value| *value >= tree_size)
-
+        from_left || from_right || from_top || from_bottom
+        
     }
 }
