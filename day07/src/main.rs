@@ -1,19 +1,15 @@
-use std::{fs::read_to_string, ops::Index, collections::HashMap};
+use std::{collections::HashMap, fs::read_to_string, ops::Index};
 
 fn main() {
-
-    let input = read_to_string("input/example.txt").unwrap();
+    let input = read_to_string("input/input.txt").unwrap();
 
     parse(input);
 }
 
 fn parse(input: String) {
-
     let mut stack: Vec<String> = Vec::new();
 
     let mut hm: HashMap<String, Vec<u32>> = HashMap::new();
-
-
 
     for line in input.lines() {
         match &line[0..4] {
@@ -21,47 +17,52 @@ fn parse(input: String) {
                 if &line[5..] == ".." {
                     stack.pop();
                 } else {
-                    let mut filename = stack.last().unwrap_or(&String::new()).clone();
-                    
-                    if &line[5..] != "/" {
-                        filename.push_str("/");
+                    let mut parent_dir = stack.last().unwrap_or(&String::new()).clone();
+                    if !parent_dir.is_empty() {
+                        parent_dir.push_str("/");
                     }
-                    
-                    filename.push_str(&line[5..]);
-                    stack.push(filename.clone());
-                    hm.insert(filename, Vec::new());
+                    let current_dir = &line[5..];
+                    parent_dir.push_str(current_dir);
+                    hm.insert(parent_dir.clone(), Vec::new());
+                    stack.push(parent_dir.clone());
                 }
-            },
+            }
             "$ ls" => {
                 continue;
-            },
+            }
             "dir " => {
-                /* the dir is processed when you cd into it. 
-                if you never cd into it and it is empty it doesn't contribute to the sulotion */
                 continue;
-            },
+            }
             _ => {
-                let file_size: u32 = line.split(" ").next().unwrap().parse().unwrap();
-                let current_dir = stack.last().unwrap().clone();
-                hm.insert(current_dir, Vec::new());
+                // parse size of file
+                let size: u32 = line.split(" ").next().unwrap().parse().unwrap();
 
-                
-
+                // add size of file to the vec in the hashmap of all the dirs in the stack
                 for dir in stack.clone() {
-                    let mut new_vec: Vec<u32> = Vec::new();
-                    new_vec.push(file_size);
-                    let old_vec = hm.get(&dir).unwrap();
-                    new_vec.append(&mut old_vec.clone());
-                    hm.insert(dir, new_vec);
+                    if !hm.contains_key(&dir) {
+                        panic!("hashmap doesn't contain the dir {dir} but it should");
+                    }
+
+                    let mut vec = hm.get(&dir).unwrap().clone();
+                    vec.push(size);
+                    hm.insert(dir, vec);
                 }
-
-            },
+            }
         }
-    };
+    }
 
-    println!("{:#?}", hm);
     let values = hm.values().map(|xs| xs.iter().sum::<u32>());
-    let res: u32 = values.filter(|v| v <= &100000).sum();
-    println!("{res}");
-}
+    let result_part1: u32 = values.clone().filter(|v| v <= &100000).sum();
+    println!("Part 1: {result_part1}");
 
+    let total_size: u32 = input.lines().filter(|line| 
+        line.chars().next().unwrap().is_digit(10)
+    ).map(|line| 
+        line.split(" ").next().unwrap().parse::<u32>().unwrap()
+    ).sum();
+
+    let needed_space = 30000000 - (70000000 - total_size);
+
+    let result_part2: u32 = values.clone().filter(|v| v >= &needed_space).min().unwrap();
+    println!("Part 2: {result_part2}");
+}
