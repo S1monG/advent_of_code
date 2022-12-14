@@ -1,7 +1,9 @@
 use std::fs::read_to_string;
 use std::collections::HashSet;
-use std::ops::{Sub, Add, AddAssign};
+use std::ops::{Sub, AddAssign};
 use Direction::*;
+
+const NBR_OF_KNOTS: usize = 10;
 
 fn main() {
 
@@ -24,9 +26,11 @@ fn main() {
 
     }
 
-    let result_part1 = rope.visited_positions_by_tail.len();
+    let result = rope.visited_positions_by_tail.len();
 
-    println!("Part 1: {}", result_part1);
+    /* For answer to part 1 the constant 'NBR_OF_KNOTS' should be 2.
+    For answer to part 2 the constant 'NBR_OF_KNOTS' should be 10. */
+    println!("Answer: {}", result);
 
 }
 
@@ -46,17 +50,6 @@ impl Sub for Point {
         }
     }
 }
-
-/* impl Add for Point {
-    type Output = Self;
-
-    fn add(self, other: Self) -> Self::Output {
-        Self {
-            x: self.x + other.x,
-            y: self.y + other.y,
-        }
-    }
-} */
 
 impl AddAssign for Point {
     fn add_assign(&mut self, other: Self) {
@@ -78,48 +71,50 @@ impl Point {
 }
 
 struct RopeGrid {
-    head: Point,
-    tail: Point,
+    knots: [Point; NBR_OF_KNOTS],
     visited_positions_by_tail: HashSet<Point>
 }
 
 impl RopeGrid {
 
-    fn new(starting_position: Point) -> RopeGrid {
+    fn new(starting_point: Point) -> RopeGrid {
         RopeGrid { 
-            head: starting_position, 
-            tail: starting_position,
+            knots: [starting_point; NBR_OF_KNOTS],
             visited_positions_by_tail: HashSet::new(),
         }
     }
 
     fn move_head(&mut self, dir: Direction) {
         match dir {
-            Up => self.head += Point::new(0, 1),
-            Down => self.head += Point::new(0, -1),
-            Right => self.head += Point::new(1, 0),
-            Left => self.head += Point::new(-1, 0),
+            Up => self.knots[0] += Point::new(0, 1),
+            Down => self.knots[0] += Point::new(0, -1),
+            Right => self.knots[0] += Point::new(1, 0),
+            Left => self.knots[0] += Point::new(-1, 0),
         }
 
         self.update_tail();
     }
 
     fn update_tail(&mut self) {
-        let diff = (self.head - self.tail).get_tuple();
 
-        match diff {
-            (2, 0) => self.tail += Point::new(1, 0),
-            (-2, 0) => self.tail += Point::new(-1, 0),
-            (0, 2) => self.tail += Point::new(0, 1),
-            (0, -2) => self.tail += Point::new(0, -1),
-            (2, 1) | (1, 2) => self.tail += Point::new(1, 1),
-            (-2, 1) | (-1, 2) => self.tail += Point::new(-1, 1),
-            (2, -1) | (1, -2) => self.tail += Point::new(1, -1),
-            (-2, -1) | (-1, -2) => self.tail += Point::new(-1, -1),
-            _ => (),
+        for i in 1..NBR_OF_KNOTS {
+            let diff = (self.knots[i-1] - self.knots[i]).get_tuple();
+
+            match diff {
+                (2, 0) => self.knots[i] += Point::new(1, 0),
+                (-2, 0) => self.knots[i] += Point::new(-1, 0),
+                (0, 2) => self.knots[i] += Point::new(0, 1),
+                (0, -2) => self.knots[i] += Point::new(0, -1),
+                (2, 1) | (1, 2) | (2, 2) => self.knots[i] += Point::new(1, 1),
+                (-2, 1) | (-1, 2) | (-2, 2) => self.knots[i] += Point::new(-1, 1),
+                (2, -1) | (1, -2) | (2, -2) => self.knots[i] += Point::new(1, -1),
+                (-2, -1) | (-1, -2) | (-2, -2) => self.knots[i] += Point::new(-1, -1),
+                _ => (),
+            }
+
         }
 
-        self.visited_positions_by_tail.insert(self.tail.clone());
+        self.visited_positions_by_tail.insert(self.knots[NBR_OF_KNOTS-1]);
     }
 }
 
