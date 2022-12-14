@@ -12,3 +12,4 @@ Cargo.lock
 # Additions
 *.json
 *.bin
+*.d
