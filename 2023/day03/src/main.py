@@ -37,7 +37,6 @@ parent_dir = Path(os.path.dirname(__file__)).parent
 abs_file_path = os.path.join(parent_dir, 'data/input.txt')
 
 sum1 = 0
-
 with open(abs_file_path) as file:
     lines = file.readlines()
     lines = [list(line.strip()) for line in lines]
@@ -58,7 +57,18 @@ with open(abs_file_path) as file:
                     sum1 += int(number)
             else:
                 number = ""
-
 print(sum1)
+
+# Part 2
+
+def gear_ratio(lines, i, j):
+    pass
+
+with open(abs_file_path) as file:
+    lines = file.readlines()
+    lines = [list(line.strip()) for line in lines]
+
+    sum2 = sum(gear_ratio(lines, i, j) for i in range(len(lines)) for j in range(len(lines[i])) if lines[i][j] == '*')
+    print(sum2)
             
 
