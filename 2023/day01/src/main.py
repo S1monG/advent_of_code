@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 number_string_representation = {
     "zero": 0,
@@ -18,6 +19,7 @@ def starts_with(string):
         if string.startswith(key):
             return number_string_representation[key]
         
+# bad name for this function
 def ends_with(string):
     for key in number_string_representation:
         if string.startswith(key[::-1]):
@@ -57,9 +59,8 @@ def solve2(input):
             return res
     
 
-script_dir = os.path.dirname(__file__) #<-- absolute dir the script is in
-rel_path = "input.txt"
-abs_file_path = os.path.join(script_dir, rel_path)
+parent_dir = Path(os.path.dirname(__file__)).parent
+abs_file_path = os.path.join(parent_dir, 'data/input.txt')
 
 sum1 = 0
 sum2 = 0
