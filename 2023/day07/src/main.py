@@ -4,11 +4,21 @@ from pathlib import Path
 parent_dir = Path(os.path.dirname(__file__)).parent
 abs_file_path = os.path.join(parent_dir, 'data/input.txt')
 
+def get_map_from_hand(hand: str):
+    jokers = 0
+    l = {}
+    for char in hand:
+        if char == '1':
+            jokers += 1
+        else:
+            l[char] = l.get(char, 0) + 1
+    return l, jokers
+
 class Hand:
     def __init__(self, hand: str, bid: int):
         # replacing chars to make it easier to compare hands by
         # using pythons built in string comparison
-        hand = hand.replace('A', 'E').replace('T', 'A').replace('J', 'B').replace('Q', 'C').replace('K', 'D')
+        hand = hand.replace('A', 'D').replace('T', 'A').replace('J', '1').replace('Q', 'B').replace('K', 'C')
         self.hand = hand
         self.bid = bid
 
@@ -17,20 +27,25 @@ class Hand:
     
     def hand_strength(self) -> int:
         # char mapped to count
-        l = {}
-        for char in self.hand:
-            l[char] = l.get(char, 0) + 1
-        if len(l) == 1: # five of a kind
+        l, jokers = get_map_from_hand(self.hand)
+        # sort the list by count, the first element will be the most common
+        # if a hand only contains one type of card, the list will only contain one element
+        # jokers (1) are not counted
+        l = sorted(list(l.values()), reverse=True)
+
+        if jokers == 5 or l[0] + jokers == 5: # five of a kind
             return 6
-        elif any(value == 4 for value in l.values()): # four of a kind
+        elif l[0] + jokers == 4: # four of a kind
             return 5
-        elif len(l) == 2 and any(value == 3 for value in l.values()): # full house
+        elif l[0] + jokers == 3 and l[1] == 2 or\
+             l[0] + jokers == 2 and l[1] == 3: # full house
             return 4
-        elif any(value == 3 for value in l.values()): # three of a kind
+        elif l[0]+ jokers == 3: # three of a kind
             return 3
-        elif len(l) == 3: # two pairs
+        elif l[0] + jokers == 2 and l[1] == 2 or\
+             l[0] == 2 and l[1] + jokers == 2: # two pairs
             return 2
-        elif len(l) == 4: # one pair
+        elif l[0] + jokers == 2: # one pair
             return 1
         else:
             return 0
@@ -59,4 +74,4 @@ with open(abs_file_path) as file:
     for i in range(len(hand_list)):
         ans1 += int(hand_list[i].get_bid()) * (i + 1)
 
-    print(f'Part 1: {ans1}')
+    print(f'Part 2: {ans1}')
