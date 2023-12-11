@@ -13,29 +13,10 @@ class PipeMap:
     def __init__(self, string_rep, width):
         self.width = width
         self.pipe_map = string_rep
-
-    def get_elem_in_dir(self, pos, dir: Direction):
-        match dir:
-            case Direction.LEFT:
-                return self.pipe_map[pos - 1]
-            case Direction.RIGHT:
-                return self.pipe_map[pos + 1]
-            case Direction.UP:
-                return self.pipe_map[pos - self.width]
-            case Direction.DOWN:
-                return self.pipe_map[pos + self.width]
-
-    # change element to step count and
-    # returns the next position with the direction it comes from
-    def next_step_rec(self, pos, from_dir: Direction):
+    
+    def get_next_pos(self, pos, from_dir: Direction):
         pipe = self.pipe_map[pos]
-        if pipe == 'S':
-            return
-        last_step_count = self.get_elem_in_dir(pos, from_dir)
-        if last_step_count == 'S':
-            last_step_count = 0
-        step_count = last_step_count + 1
-        self.pipe_map[pos] = step_count
+        # print(f'Pipe: {pipe}, from dir {from_dir}')
         match pipe:
             case '|':
                 if from_dir == Direction.UP:
@@ -79,28 +60,52 @@ class PipeMap:
                     return (pos + self.width, Direction.UP)
                 else:
                     raise Exception('Invalid direction')
+    
+    def get_loop(self, start_pos, start_dir: Direction):
+        positions = set()
+        positions.add(start_pos)
+        current_pos = (start_pos + 1, start_dir) # starting position is hardcoded and need to be changed based on input
+        while current_pos[0] not in positions:
+            positions.add(current_pos[0])
+            current_pos = self.get_next_pos(current_pos[0], current_pos[1])
+        return positions
 
-    # Starting values are hard coded and need to be changed based on input
-    def solve(self):
+    def solve(self) -> (int, int):
         start_pos = self.pipe_map.index('S')
-        next = self.next_step_rec(start_pos + 1, Direction.LEFT)
-        while next is not None:
-            next = self.next_step_rec(next[0], next[1])
+        pipe_loop = self.get_loop(start_pos, Direction.LEFT) # Starting direction is hardcoded and need to be changed based on input
+        ans1 = math.ceil(len(pipe_loop) / 2)
 
-        cycle_steps = int(self.pipe_map[start_pos - 1])
-        return math.ceil(cycle_steps / 2)
-        
+        # Go through each position, check intersections with the loop going diagonaly
+        # Odd intersections => inside loop, even intersections => outside loop
+        # Edge case if the pipe is a L or a 7
+        ans2 = 0
+        for idx in range(len(self.pipe_map)):
+            if idx in pipe_loop:
+                continue
+
+            intersections = 0    
+            i = idx
+            while i < len(self.pipe_map):
+                pipe = self.pipe_map[i]
+                if i in pipe_loop and pipe != 'L' and pipe != '7':
+                    intersections += 1
+                i += self.width + 1
+            
+            if intersections % 2 == 1:
+                ans2 += 1
+
+        return ans1, ans2
 
 
-
+    
 
 parent_dir = Path(os.path.dirname(__file__)).parent
 abs_file_path = os.path.join(parent_dir, 'data/input.txt')
-# sample answer should be 8
 
 with open(abs_file_path) as file:
     lines = [line.strip() for line in file.readlines()]
-    width = len(lines)
+    width = len(lines[0])
     pipe_map = PipeMap(list(''.join(lines)), width)
-    ans1 = pipe_map.solve()
-    print(ans1)
+    ans1, ans2 = pipe_map.solve()
+    print(f'Part 1: {ans1}')
+    print(f'Part 2: {ans2}')
