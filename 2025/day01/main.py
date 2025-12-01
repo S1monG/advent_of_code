@@ -19,24 +19,23 @@ def p1():
 def p2():
     count = 0
     dial = 50
+    
     with open('input.txt') as f:
-        for line in f:
+        for line in f.readlines():
             line = line.strip()
-            prev = dial
-
+            steps = int(line[1:])
             if line[0] == 'R':
-                dial += int(line[1:])
+                count += (dial + steps) // 100
+                dial = (dial + steps) % 100
             else:
-                dial -= int(line[1:])
-
-            if dial > prev:
-                count += (dial // 100)
-            else:
-                count += ((-dial + 99) // 100)
-
-            dial = dial % 100
-
-    return count
+                if dial - steps < 0:
+                    count += abs((100 + dial - steps) // 100)
+                    if dial != 0: 
+                        count += 1
+                dial = (dial - steps) % 100
+                count += dial == 0
+        
+        return count
 
 if __name__ == '__main__':
     print(f"Part 1: {p1()}")
